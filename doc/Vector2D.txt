@@ -1,0 +1,17 @@
+Vector2D.cpp - Diário da Implementação - 24/09/2026
+
+Primeiro separei o que já vinha pronto no cabeçalho (length_squared, length, dot e cross) do que faltava, e adicionei no .cpp o normalized, 
+o normalize, o equals, os operadores aritméticos e o operador de escalar vezes vetor. Comecei pela normalização, guardando o comprimento na 
+variável 'magnitude' para não chamar a raiz quadrada duas vezes, e usei assert para conferir a pré-condição de que ele é maior que EPSILON. 
+O normalized devolve *this dividido pela magnitude, reaproveitando o operador de divisão, e o normalize divide x e y diretamente. Depois fiz 
+o equals. Não usei == com float por causa do risco de erros de arredondamento. Como o contrato pede uma tolerância, cujo valor padrão é o 
+EPSILON, comparei o valor absoluto da diferença de x e o de y com essa tolerância.
+Nos operadores, a divisão e o /= têm no contrato a pré-condição de o módulo do escalar ser maior que EPSILON, então coloquei o mesmo assert 
+da normalização para não dividir por zero. O escalar vezes vetor apenas chama vec * scalar para não repetir a conta.
+Adicionei a biblioteca cassert porque achei interessante usar o assert para transformar as pré-condições dos comentários do contrato em verificações 
+reais, como mencionado na aula. Dando uma olhada na documentação da cppreference (https://en.cppreference.com/w/cpp/error/assert), vi que o assert 
+só verifica a condição e aborta o programa se ela for falsa, e que dá para desligá-lo compilando com -DNDEBUG.
+Também adicionei o Global.hpp somente local, que o Vector2D.hpp inclui, com apenas uma definição para EPSILON, para compilar.
+
+
+Atualização 26 de setembro.
