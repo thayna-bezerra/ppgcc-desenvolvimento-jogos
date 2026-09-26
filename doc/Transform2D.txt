@@ -1,0 +1,24 @@
+Transform2D.cpp - Diário da Implementação - 25/09/2026
+
+Primeiro separei as três fábricas (translation, rotation e scale), o operator*, o operator*=, o transform_point e o transform_vector.
+Comecei pelas fábricas. Como o construtor padrão já criava a matriz identidade, então em translation e scale criei um result e só
+troquei as posições necessárias, tx e ty em m[2][0] e m[2][1] na translação, e sx e sy na diagonal (m[0][0] e m[1][1]) na escala.
+Na rotation guardei o cos e o sin nas vars 'c' e 's' para calcular cada um só uma vez, e preenchi o bloco 2x2 como o contrato descreve, 
+com sin positivo em m[0][1] e negativo em m[1][0].
+No operator* fiz o produto de matrizes 3x3 com dois for, um para a linha e outro para a coluna, somando os três termos de cada posição, 
+e guardei o resultado numa matriz nova. No transform_point escrevi a multiplicação do ponto pela matriz já expandida, somando a terceira
+linha para aplicar a translação. Aproveitei para usar a mesma conta no transform_vector, só que sem somar m[2][0] e m[2][1], já que a 
+direção tem w = 0 e não sofre translação. Não usei assert neste porque no contrato não tem pré-condições, e adicionei a biblioteca cmath 
+para o std::cos e o std::sin.
+Tive um pouco de dificuldade na convenção de vetores. O contrato explica que os vetores são linha e que a translação fica na terceira linha,
+mas eu me enganei com vetores coluna e acabei aplicando essa convenção, o que também me confundiu na ordem da composição, já que aqui o A * B 
+aplica A primeiro. Usei o Codex para identificar qual era o problema, especifiquei no prompt que o translation(1,2) * scale(2,3) aplicado em 
+(0,0) não dava o resultado que eu esperava, então ele identificou que a diferença estava nas convenções e na ordem da multiplicação, e depois 
+reli o contrato e entendi melhor. 
+Também tive dificuldade no operador*=. Na primeira tentativa, escrevi o resultado direto em m, que acabou sobrescrevendo valores que ainda 
+precisava ler (principalmente em X *= X). Usei o Codex novamente onde descrevi no prompt o comportamento errado do x = x para identificar qual 
+o problema e entender por que acontecia, e com a ajuda dele resolvi fazendo o operador*= apenas executar *this = *this * rhs, reaproveitando o 
+operator, que monta o resultado numa matriz temporária e não repete a conta.
+
+
+Atualização 26 de setembro.
