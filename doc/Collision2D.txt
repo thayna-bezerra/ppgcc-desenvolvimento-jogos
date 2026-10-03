@@ -1,0 +1,8 @@
+Collision2D.cpp - Diário da Implementação - 02/10/2026
+
+Usei <= e >= em vez de < e >, pois no intersects, o contrato deixa explícito que bordas tocando contam como sobreposição. Comparei 
+min.x com other.max.x e max.x com other.min.x, e o mesmo para y, para que as duas caixas não se sobreponham se estiverem separadas 
+em algum dos dois eixos. No bounds a fórmula já vinhapronta no contrato, então só copiei a conta usando os operadores + e - do Vector2D.
+
+
+Atualização 2 de outubro.
