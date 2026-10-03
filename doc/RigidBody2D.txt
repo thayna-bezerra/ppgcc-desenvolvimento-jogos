@@ -1,0 +1,8 @@
+RigidBody2D.cpp - Diário da Implementação - 01/10/2026
+
+Segui a ordem das contas que tinha no contrato, primeiro atualizei velocity somando acceleration * dt, e depois position somando 
+velocity * dt, já com o valor novo. Reaproveitei os operadores += e * do Vector2D. O contrato tinha uma pré-condição, dt > 0, 
+então adicionei um assert no começo do integrate.
+
+
+Atualização 2 de outubro.
