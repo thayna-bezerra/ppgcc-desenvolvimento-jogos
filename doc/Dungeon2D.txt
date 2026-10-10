@@ -1,0 +1,34 @@
+Dungeon2D.cpp - Diário da Implementação - 08/10/2026
+
+Acredito que a maior parte do trabalho foi em como seguir as restrições finais. Como o generate só recebe a seed (não recebe região 
+e nem nó), eu criei uma função auxiliar recursiva 'buildTree' com toda a lógica de dividir e sortear, que recebe a região atual e o 
+gerador aleatório, devolvendo o nó montado. Ainda dentro dela, a cada região eu decido se ainda cabe dividir, se só corto um eixo se 
+os dois lados resultantes ficarem com pelo menos 5 tiles, e quando os dois eixos permitem corto sempre o mais longo, para não gerar 
+regiões muito desproporcionais. Quando não cabe dividir mais, a região se torna uma folha, e aí a buildTree chama a 'carveRoom', outra 
+função separada, só para sortear o tamanho e a posição da sala dentro da região, respeitando o mínimo de 5x5.
+Minha maior dificuldade foi em como ligar as salas. O 'Corridor' no contrato é só um retângulo alinhado aos eixos, mas duas salas de 
+regiões diferentes quase nunca têm centros na mesma linha ou coluna, então um retângulo só não dá para ligar os dois pontos. Não consegui 
+pensar num jeito de resolver isso sozinha, então usei o Gemini para me dar um norte, perguntando: "tenho duas salas em posições quaisquer
+do grid, e um corredor só pode ser um retângulo alinhado aos eixos, como eu ligo o centro de uma sala ao centro da outra usando só retângulos
+desse tipo?". A resposta foi o corredor em L que foi implementado na função 'connect' um segmento horizontal até a coluna da segunda sala, 
+depois um segmento vertical até a linha dela, cada um com 3 tiles de largura, os dois guardados como corridor separados.
+Para chamar o connect eu precisava de um ponto de uma sala de cada subárvore, e como o nó nem sempre é uma folha, tentei primeiro resolver 
+isso sozinha percorrendo a árvore dentro do próprio connectSubtrees, mas me perdia em qual nó pegar quando ele tinha mais filhos por baixo. 
+Pedi para o Gemini revisar essa parte, descrevendo o problema com "preciso do centro de uma sala de cada lado de um nó interno da árvore, mas 
+o nó pode não ser uma folha, como eu acho uma sala válida dentro de uma subárvore qualquer?". Ele sugeriu separar isso numa função própria, a 
+representativeRoomCentre (criado pela llm, eu revisei e entendi a lógica), que desce recursivamente até achar a primeira folha de cada lado e 
+pega o centro da sala dela, em vez de misturar essa busca com o resto do connectSubtrees. O connectSubtrees usa essas duas funções, lá a árvore 
+é percorrida depois de já montada, em cada nó que tem dois filhos, ela chama a representativeRoomCentre para os dois lados, liga os dois com o 
+connect, e recursa para left e right. Como isso se repete em todo nó interno, do topo até as folhas, toda sala acaba ligada a toda outra por 
+transitividade.
+Para a aleatoriedade usei o std::mt19937 (Mersenne Twister) citado na aula, com a seed recebida em generate, passado por referência para a 
+buildTree a cada chamada recursiva, para que a mesma seed sempre gere a mesma masmorra, como o contrato pede.
+Para testar se as regras estavam batendo direitinho, testei fora do repositório gerando uma masmorra com várias seeds diferentes com cada uma 
+percorrendo a árvore coletando todas as salas, verificando se cada uma tinha pelo menos 5x5, e se cada corredor da lista tinha 3 tiles de largura.
+Para a conectividade, desenhei as salas e os corredores numa matriz (1 onde é sala ou corredor, 0 onde não é) e fiz a busca a partir do centro 
+de uma sala qualquer, espalhando para os vizinhos que também valiam 1, até não sobrar mais nenhum vizinho novo. No final, conferi se o centro de 
+toda sala da árvore tinha sido alcançado nessa busca, se alguma ficasse de fora, significava que a masmorra tinha ficado dividida em partes 
+desconectadas. 
+
+
+Atualização 10 de outubro.
