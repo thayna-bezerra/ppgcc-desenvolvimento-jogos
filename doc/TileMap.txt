@@ -1,0 +1,23 @@
+TileMap.cpp - Diário da Implementação - 09/10/2026
+
+Primeiro segui com loadFromDungeon, dimensionando a matriz para o tamanho da dungeon, preenchendo tudo com WALL_TILE e depois carvando
+EMPTY_TILE nas salas das folhas da árvore BSP e nos corredores, seguindo como dito no contrato. Só que o método só recebia a Dungeon2D
+inteira, não um nó, e para percorrer a árvore binária eu precisava chamar a mesma lógica de novo em cada filho. Por isso separei essa
+travessia na função 'carveLeaves', que desce recursivamente até as folhas carvando cada sala, e fiz outra função separada, a 'carveRect', 
+só para preencher um retângulo de EMPTY_TILE na matriz, reaproveitada tanto pela carveLeaves quanto para os corredores, em vez de repetir o
+laço duas vezes.
+No saveCSV também segui o contrato, uma linha por linha do mapa, vírgula entre os valores e sem vírgula sobrando no final da linha. No 
+loadCSV tive dúvida sobre como garantir a pós-condição de que, em caso de falha, o mapa fica inalterado, sem ter que desfazer alguma 
+alteração já feita nos campos do objeto. Perguntei ao Gemini como resolver isso, e a resposta foi montar a matriz nova inteira em
+variáveis locais, só sobrescrevendo os campos do objeto no final, se tudo tivesse dado certo até ali. Também tive curiosidade sobre o que 
+aconteceria se uma célula não fosse um número válido, como por exemplo o stoi receber só letras, sem nenhum número. Perguntei ao Gemini, e 
+ele explicou que nesse caso o stoi lança uma exceção que se não for capturada, trava o programa inteiro em vez de simplesmente retornar 
+algum valor de erro. Por isso foi adicionado um try/catch em volta do stoi, para transformar essa falha num retorno false, como o contrato pede. 
+Tive um pequeno travamento para decidir o que usar no randomEmptyCell, pois ele é diferente do generate do Dungeon2D e não recebe seed
+nenhuma, então fiquei na dúvida se devia usar o mesmo gerador ou algo diferente, já que aqui não preciso de reprodutibilidade. Considerei
+usar rand()/srand(), mas lembrei do que foi falado em aula sobre o srand(time(NULL)) não poder ser chamado dentro de um loop, e como esse
+método pode ser chamado várias vezes durante num jogo, decidi não correr esse risco. Usei o std::random_device só para gerar a semente 
+para manter o mesmo padrão do Dungeon2D.
+
+
+Atualização 10 de outubro.
