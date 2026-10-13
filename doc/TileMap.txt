@@ -16,8 +16,16 @@ algum valor de erro. Por isso foi adicionado um try/catch em volta do stoi, para
 Tive um pequeno travamento para decidir o que usar no randomEmptyCell, pois ele é diferente do generate do Dungeon2D e não recebe seed
 nenhuma, então fiquei na dúvida se devia usar o mesmo gerador ou algo diferente, já que aqui não preciso de reprodutibilidade. Considerei
 usar rand()/srand(), mas lembrei do que foi falado em aula sobre o srand(time(NULL)) não poder ser chamado dentro de um loop, e como esse
-método pode ser chamado várias vezes durante num jogo, decidi não correr esse risco. Usei o std::random_device só para gerar a semente 
+método pode ser chamado várias vezes durante um jogo, decidi não correr esse risco. Usei o std::random_device só para gerar a semente 
 para manter o mesmo padrão do Dungeon2D.
 
 
-Atualização 10 de outubro.
+Atualização 12 de outubro:
+
+Durante a implementação, no dia 9, eu havia escrito um programinha de teste que gerava uma dungeon, carregava no TileMap e salvava em CSV. 
+Agora, seguindo a sugestão mandada pelo professor no e-mail, fiz o mesmo teste novamente, escrevendo um programa separado que gera a dungeon, 
+carrega no TileMap e exporta para CSV com o saveCSV, para depois abrir no Excel. Compilei esse teste junto com o TileMap.cpp, o Dungeon2D.cpp 
+e o Vector2D.cpp, rodei e o saveCSV retornou true, com o width e o height saindo certos, e o CSV abriu normalmente, com vírgula simples e 
+só 0 e 1. Pedi ajuda do Gemini para entender o erro que o professor enviou, que era "cc1plus: fatal error: .../Tilemap.cpp: No such file or 
+directory". Ele me explicou que esse erro é de arquivo não encontrado e que a mensagem procurava por "Tilemap.cpp" com m minúsculo, enquanto 
+o meu arquivo se chama "TileMap.cpp" com M maiúsculo, igual ao nome da classe TileMap no contrato
