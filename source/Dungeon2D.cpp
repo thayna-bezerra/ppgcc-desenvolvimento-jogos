@@ -8,25 +8,37 @@ namespace {
 
 constexpr int MIN_ROOM = 5;
 constexpr int CORRIDOR_HALF = 1;
+constexpr int ROOM_MARGIN = 2;
+constexpr int MIN_REGION = MIN_ROOM + 2 * ROOM_MARGIN;
 
-int regionWidth(const Rect& r) { return r.right - r.left; }
-int regionHeight(const Rect& r) { return r.bottom - r.top; }
+int regionWidth(const Rect& r) { return r.right - r.left + 1; }
+int regionHeight(const Rect& r) { return r.bottom - r.top + 1; }
 
-bool canSplitX(const Rect& r) { return regionWidth(r) >= MIN_ROOM * 2; }
-bool canSplitY(const Rect& r) { return regionHeight(r) >= MIN_ROOM * 2; }
+bool canSplitX(const Rect& r) { return regionWidth(r) >= MIN_REGION * 2; }
+bool canSplitY(const Rect& r) { return regionHeight(r) >= MIN_REGION * 2; }
+
+int marginFor(int regionSize) {
+    return std::max(0, std::min(ROOM_MARGIN, (regionSize - MIN_ROOM) / 2));
+}
 
 Rect carveRoom(const Rect& region, std::mt19937& rng) {
-    std::uniform_int_distribution<int> wDist(MIN_ROOM, regionWidth(region));
-    std::uniform_int_distribution<int> hDist(MIN_ROOM, regionHeight(region));
-    int roomW = wDist(rng);
-    int roomH = hDist(rng);
+    const int marginX = marginFor(regionWidth(region));
+    const int marginY = marginFor(regionHeight(region));
 
-    std::uniform_int_distribution<int> xDist(region.left, region.right - roomW);
-    std::uniform_int_distribution<int> yDist(region.top, region.bottom - roomH);
-    int left = xDist(rng);
-    int top = yDist(rng);
+    const int availableW = regionWidth(region) - 2 * marginX;
+    const int availableH = regionHeight(region) - 2 * marginY;
 
-    return Rect{ left, top, left + roomW, top + roomH };
+    std::uniform_int_distribution<int> wDist(std::min(MIN_ROOM, availableW), availableW);
+    std::uniform_int_distribution<int> hDist(std::min(MIN_ROOM, availableH), availableH);
+    const int roomW = wDist(rng);
+    const int roomH = hDist(rng);
+
+    std::uniform_int_distribution<int> xDist(region.left + marginX, region.right - marginX - roomW + 1);
+    std::uniform_int_distribution<int> yDist(region.top + marginY, region.bottom - marginY - roomH + 1);
+    const int left = xDist(rng);
+    const int top = yDist(rng);
+
+    return Rect{ left, top, left + roomW - 1, top + roomH - 1 };
 }
 
 std::unique_ptr<BSPNode> buildTree(const Rect& region, std::mt19937& rng) {
@@ -44,15 +56,15 @@ std::unique_ptr<BSPNode> buildTree(const Rect& region, std::mt19937& rng) {
     const bool cutAlongX = splitX && (!splitY || regionWidth(region) >= regionHeight(region));
 
     if (cutAlongX) {
-        std::uniform_int_distribution<int> cutDist(region.left + MIN_ROOM, region.right - MIN_ROOM);
+        std::uniform_int_distribution<int> cutDist(region.left + MIN_REGION - 1, region.right - MIN_REGION);
         const int cut = cutDist(rng);
         node->left = buildTree(Rect{ region.left, region.top, cut, region.bottom }, rng);
-        node->right = buildTree(Rect{ cut, region.top, region.right, region.bottom }, rng);
+        node->right = buildTree(Rect{ cut + 1, region.top, region.right, region.bottom }, rng);
     } else {
-        std::uniform_int_distribution<int> cutDist(region.top + MIN_ROOM, region.bottom - MIN_ROOM);
+        std::uniform_int_distribution<int> cutDist(region.top + MIN_REGION - 1, region.bottom - MIN_REGION);
         const int cut = cutDist(rng);
         node->left = buildTree(Rect{ region.left, region.top, region.right, cut }, rng);
-        node->right = buildTree(Rect{ region.left, cut, region.right, region.bottom }, rng);
+        node->right = buildTree(Rect{ region.left, cut + 1, region.right, region.bottom }, rng);
     }
 
     return node;
@@ -99,10 +111,8 @@ Dungeon2D::Dungeon2D(int widthTiles, int heightTiles)
 }
 
 void Dungeon2D::generate(unsigned seed) {
-    assert(width >= MIN_ROOM && height >= MIN_ROOM);
-
     std::mt19937 rng(seed);
-    root = buildTree(Rect{ 0, 0, width, height }, rng);
+    root = buildTree(Rect{ 0, 0, width - 1, height - 1 }, rng);
 
     corridors.clear();
     connectSubtrees(*root, corridors);

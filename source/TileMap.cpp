@@ -12,12 +12,12 @@ namespace {
 
 void carveRect(std::vector<int>& cells, int width, int height, const Rect& rect) {
     const int rowStart = std::max(0, rect.top);
-    const int rowEnd = std::min(height, rect.bottom);
+    const int rowEnd = std::min(height - 1, rect.bottom);
     const int colStart = std::max(0, rect.left);
-    const int colEnd = std::min(width, rect.right);
+    const int colEnd = std::min(width - 1, rect.right);
 
-    for (int row = rowStart; row < rowEnd; ++row) {
-        for (int col = colStart; col < colEnd; ++col) {
+    for (int row = rowStart; row <= rowEnd; ++row) {
+        for (int col = colStart; col <= colEnd; ++col) {
             cells[row * width + col] = EMPTY_TILE;
         }
     }
@@ -28,8 +28,12 @@ void carveLeaves(const BSPNode& node, std::vector<int>& cells, int width, int he
         carveRect(cells, width, height, node.room);
         return;
     }
-    carveLeaves(*node.left, cells, width, height);
-    carveLeaves(*node.right, cells, width, height);
+    if (node.left) {
+        carveLeaves(*node.left, cells, width, height);
+    }
+    if (node.right) {
+        carveLeaves(*node.right, cells, width, height);
+    }
 }
 
 } 
