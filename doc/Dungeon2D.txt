@@ -31,4 +31,16 @@ toda sala da árvore tinha sido alcançado nessa busca, se alguma ficasse de for
 desconectadas. 
 
 
-Atualização 10 de outubro.
+Atualização 18 de outubro:
+
+O professor rodou o teste e meu projeto não passou, com a mensagem "[TEST FAILED] TileMap Carving: Cell (5, 3) should be carved EMPTY_TILE, 
+but is WALL_TILE". Pedi ajuda ao Gemini e entendi que a causa era uma convenção que eu tinha entendido errado, porque o contrato descreve 
+que as coordenadas right e bottom são células que fazem parte do retângulo, e eu estava tratando como se o retângulo parasse antes delas. 
+Por isso toda sala e todo corredor perdiam a última linha e a última coluna, que viravam parede. Eu corrigi o tamanho da região agora com 
+right - left + 1, e a sala é montada como left + roomW - 1, a região raiz vai de 0 até width - 1, e o corte da árvore deixou de repetir a 
+coluna do meio (o filho da esquerda vai até cut e o da direita começa em cut + 1, sem sobreposição). O connect voltou ao formato original, 
+com centro +- 1, pra poder bater com os 3 tiles que o contrato pede.
+Fazendo a inspeção visual do CSV pelo excel, acabei pegando um segundo problema que eu não tinha pegado nos testes numericos, o mapa saía
+com 88% de células vazias, parecendo um salão aberto em vez de uma masmorra. Como a sala podia ocupar a região inteira da folha, salas de
+regiões vizinhas se encostavam e se fundiam. Criei o ROOM_MARGIN para garantir parede entre a sala e a borda da sua região. Também removi
+um assert que eu tinha colocado no generate exigindo masmorra de pelo menos 5 tiles

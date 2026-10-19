@@ -28,4 +28,16 @@ carrega no TileMap e exporta para CSV com o saveCSV, para depois abrir no Excel.
 e o Vector2D.cpp, rodei e o saveCSV retornou true, com o width e o height saindo certos, e o CSV abriu normalmente, com vírgula simples e 
 só 0 e 1. Pedi ajuda do Gemini para entender o erro que o professor enviou, que era "cc1plus: fatal error: .../Tilemap.cpp: No such file or 
 directory". Ele me explicou que esse erro é de arquivo não encontrado e que a mensagem procurava por "Tilemap.cpp" com m minúsculo, enquanto 
-o meu arquivo se chama "TileMap.cpp" com M maiúsculo, igual ao nome da classe TileMap no contrato
+o meu arquivo se chama "TileMap.cpp" com M maiúsculo, igual ao nome da classe TileMap no contrato.
+
+
+Atualização 18 de outubro:
+
+Novo erro: "[TEST FAILED] TileMap Carving: Cell (5, 3) should be carved EMPTY_TILE, but is WALL_TILE". A causa era a convenção do Rect, 
+(expliquei no diário do Dungeon2D), e apareceu aqui porque a carveRect é quem escreve as células na matriz. Ela parava antes de right 
+e bottom, com row < rowEnd e col < colEnd, então toda sala e todo corredor perdiam a última linha e a última coluna. A célula (5, 3) do 
+erro era justamente uma dessas, de canto. A correção foi trocar os dois laços para row <= rowEnd e col <= colEnd, e recortar em width - 1 
+e height - 1, que são os últimos índices válidos da matriz, em vez de width e height. Aproveitei para proteger a carveLeaves com um if em 
+cada filho antes de descer na recursão, porque o isLeaf só devolve true quando os dois filhos são nulos, então um nó com apenas um filho 
+faria o c odigo acessar um ponteiro nulo e poderia travar o programa
+
